@@ -41,8 +41,28 @@ def login_required(f):
 
 @app.route('/')
 def home():
-    stories = Story.query.filter_by(status='published').order_by(Story.created_at.desc()).all()
-    return render_template('home.html', stories=stories)
+    search_query = request.args.get('q', '').strip()
+    genre_filter = request.args.get('genre', '').strip()
+
+    query = Story.query.filter_by(status='published')
+
+    if search_query:
+        query = query.filter(Story.title.ilike(f'%{search_query}%'))
+
+    if genre_filter:
+        query = query.filter_by(genre=genre_filter)
+
+    stories = query.order_by(Story.created_at.desc()).all()
+
+    genres = ['Fantasy', 'Romance', 'Mystery', 'Sci-Fi', 'Horror', 'Adventure', 'Other']
+
+    return render_template(
+        'home.html',
+        stories=stories,
+        genres=genres,
+        search_query=search_query,
+        genre_filter=genre_filter
+    )
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -322,6 +342,45 @@ def add_comment(chapter_id):
         db.session.commit()
 
     return redirect(url_for('read_chapter', story_id=chapter.story_id, chapter_number=chapter.chapter_number))
+
+
+@app.route('/profile/<username>')
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    published_stories = Story.query.filter_by(author_id=user.id, status='published').order_by(Story.created_at.desc()).all()
+
+    is_following = False
+    if 'user_id' in session and session['user_id'] != user.id:
+        is_following = Follow.query.filter_by(follower_id=session['user_id'], following_id=user.id).first() is not None
+
+    return render_template(
+        'profile.html',
+        profile_user=user,
+        stories=published_stories,
+        is_following=is_following
+    )
+
+
+@app.route('/profile/<username>/follow', methods=['POST'])
+@login_required
+def toggle_follow(username):
+    user_to_follow = User.query.filter_by(username=username).first_or_404()
+
+    if user_to_follow.id == session['user_id']:
+        return redirect(url_for('profile', username=username))
+
+    existing_follow = Follow.query.filter_by(follower_id=session['user_id'], following_id=user_to_follow.id).first()
+
+    if existing_follow:
+        db.session.delete(existing_follow)
+    else:
+        new_follow = Follow(follower_id=session['user_id'], following_id=user_to_follow.id)
+        db.session.add(new_follow)
+
+    db.session.commit()
+
+    return redirect(url_for('profile', username=username))
 
 
 if __name__ == '__main__':
