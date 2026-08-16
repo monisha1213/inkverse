@@ -10,13 +10,13 @@
     <nav>
         <a href="{{ url_for('home') }}">InkVerse</a>
 
-        {% if current_user %}
-            <span>Hello, {{ current_user.username }}</span>
-            <a href="{{ url_for('create_story') }}">New Story</a>
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('bookmarks') }}">Bookmarks</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-        {% else %}
+       {% if current_user %}
+          <a href="{{ url_for('profile', username=current_user.username) }}">Hello, {{ current_user.username }}</a>
+          <a href="{{ url_for('create_story') }}">New Story</a>
+          <a href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('bookmarks') }}">Bookmarks</a>
+          <a href="{{ url_for('logout') }}">Logout</a>
+       {% else %}
             <a href="{{ url_for('register') }}">Register</a>
             <a href="{{ url_for('login') }}">Login</a>
         {% endif %}

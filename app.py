@@ -16,7 +16,7 @@ from models.follow import Follow
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inkverse.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'dev-secret-key-change-this-later'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-this-later')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
