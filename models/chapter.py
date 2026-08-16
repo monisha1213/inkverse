@@ -11,7 +11,7 @@ class Chapter(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    story = db.relationship('Story', backref=db.backref('chapters', lazy=True, order_by='Chapter.chapter_number'))
+    story = db.relationship('Story', backref=db.backref('chapters', lazy=True, order_by='Chapter.chapter_number', cascade='all, delete-orphan'))
 
     def __repr__(self):
         return f'<Chapter {self.chapter_number}: {self.title}>'

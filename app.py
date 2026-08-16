@@ -141,16 +141,56 @@ def view_story(story_id):
     return render_template('view_story.html', story=story)
 
 
-@app.route('/stories/<int:story_id>/edit')
+@app.route('/stories/<int:story_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_story(story_id):
-    return f"Edit story {story_id} (coming soon)"
+    story = Story.query.get_or_404(story_id)
+
+    if story.author_id != session['user_id']:
+        return "You are not allowed to edit this story.", 403
+
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        genre = request.form.get('genre')
+        status = request.form.get('status')
+
+        if not title:
+            return render_template('edit_story.html', story=story, error='Title is required.')
+
+        file = request.files.get('cover_image')
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            unique_filename = f"{uuid.uuid4().hex}_{filename}"
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+            story.cover_image = unique_filename
+
+        story.title = title
+        story.description = description
+        story.genre = genre
+        story.status = status
+
+        db.session.commit()
+
+        return redirect(url_for('view_story', story_id=story.id))
+
+    return render_template('edit_story.html', story=story)
 
 
-@app.route('/stories/<int:story_id>/delete')
+@app.route('/stories/<int:story_id>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_story(story_id):
-    return f"Delete story {story_id} (coming soon)"
+    story = Story.query.get_or_404(story_id)
+
+    if story.author_id != session['user_id']:
+        return "You are not allowed to delete this story.", 403
+
+    if request.method == 'POST':
+        db.session.delete(story)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+
+    return render_template('delete_story.html', story=story)
 
 
 @app.route('/stories/<int:story_id>/chapters/new', methods=['GET', 'POST'])

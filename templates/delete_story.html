@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ story.title }} - InkVerse{% endblock %}
+
+{% block content %}
+    <h1>Delete "{{ story.title }}"?</h1>
+
+    <p>This will permanently delete this story, along with all its chapters, comments, likes, and bookmarks. This action cannot be undone.</p>
+
+    <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}">
+        <button type="submit" style="background-color: #c0392b; color: white;">Yes, delete this story</button>
+    </form>
+
+    <p><a href="{{ url_for('view_story', story_id=story.id) }}">Cancel, go back</a></p>
+{% endblock %}

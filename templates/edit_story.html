@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ story.title }} - InkVerse{% endblock %}
+
+{% block content %}
+    <h1>Edit "{{ story.title }}"</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('edit_story', story_id=story.id) }}" enctype="multipart/form-data">
+        <div>
+            <label for="title">Title</label><br>
+            <input type="text" id="title" name="title" value="{{ story.title }}" required>
+        </div>
+        <br>
+        <div>
+            <label for="description">Description</label><br>
+            <textarea id="description" name="description" rows="4">{{ story.description }}</textarea>
+        </div>
+        <br>
+        <div>
+            <label for="cover_image">Cover Image</label><br>
+            {% if story.cover_image %}
+                <img src="{{ url_for('static', filename='uploads/' + story.cover_image) }}" alt="Current cover" width="120"><br>
+                <small>Current cover shown above. Upload a new file only if you want to replace it.</small><br>
+            {% endif %}
+            <input type="file" id="cover_image" name="cover_image" accept="image/*">
+        </div>
+        <br>
+        <div>
+            <label for="genre">Genre</label><br>
+            <select id="genre" name="genre">
+                {% for g in ['Fantasy', 'Romance', 'Mystery', 'Sci-Fi', 'Horror', 'Adventure', 'Other'] %}
+                    <option value="{{ g }}" {% if story.genre == g %}selected{% endif %}>{{ g }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <div>
+            <label for="status">Status</label><br>
+            <select id="status" name="status">
+                <option value="draft" {% if story.status == 'draft' %}selected{% endif %}>Draft (only you can see it)</option>
+                <option value="published" {% if story.status == 'published' %}selected{% endif %}>Published (everyone can see it)</option>
+            </select>
+        </div>
+        <br>
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <p><a href="{{ url_for('view_story', story_id=story.id) }}">&larr; Back to story</a></p>
+{% endblock %}
