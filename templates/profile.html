@@ -8,6 +8,8 @@
 
         {% if profile_user.bio %}
             <p>{{ profile_user.bio }}</p>
+        {% elif current_user and current_user.id == profile_user.id %}
+            <p><em>You haven't added a bio yet.</em></p>
         {% endif %}
 
         <p>
@@ -18,7 +20,9 @@
             <strong>{{ stories|length }}</strong> published stories
         </p>
 
-        {% if current_user and current_user.id != profile_user.id %}
+        {% if current_user and current_user.id == profile_user.id %}
+            <a href="{{ url_for('edit_profile') }}">Edit Profile</a>
+        {% elif current_user %}
             <form method="POST" action="{{ url_for('toggle_follow', username=profile_user.username) }}">
                 <button type="submit">
                     {% if is_following %}

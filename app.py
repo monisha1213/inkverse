@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import timedelta
 from flask import Flask, render_template, request, session, redirect, url_for
 from functools import wraps
 from werkzeug.utils import secure_filename
@@ -17,6 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inkverse.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'dev-secret-key-change-this-later'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 db.init_app(app)
 
@@ -94,6 +96,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        remember_me = request.form.get('remember_me')
 
         user = User.query.filter_by(username=username).first()
 
@@ -101,6 +104,7 @@ def login():
             return render_template('login.html', error='Invalid username or password.')
 
         session['user_id'] = user.id
+        session.permanent = bool(remember_me)
         return redirect(url_for('home'))
 
     return render_template('login.html')
@@ -360,6 +364,20 @@ def profile(username):
         stories=published_stories,
         is_following=is_following
     )
+
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    user = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        bio = request.form.get('bio', '').strip()
+        user.bio = bio
+        db.session.commit()
+        return redirect(url_for('profile', username=user.username))
+
+    return render_template('edit_profile.html')
 
 
 @app.route('/profile/<username>/follow', methods=['POST'])
