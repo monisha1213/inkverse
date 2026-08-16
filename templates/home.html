@@ -3,6 +3,25 @@
 {% block title %}Home - InkVerse{% endblock %}
 
 {% block content %}
-    <h1>Welcome to InkVerse</h1>
-    <p>Discover and share amazing stories.</p>
+    <h1>Discover Stories</h1>
+    <p>Read amazing stories from writers around the world.</p>
+
+    {% if stories %}
+        <div class="story-grid">
+            {% for story in stories %}
+                <a href="{{ url_for('view_story', story_id=story.id) }}" class="story-card">
+                    {% if story.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + story.cover_image) }}" alt="{{ story.title }}">
+                    {% else %}
+                        <div class="no-cover">No Cover</div>
+                    {% endif %}
+                    <h3>{{ story.title }}</h3>
+                    <p class="genre-tag">{{ story.genre }}</p>
+                    <p class="author-name">by {{ story.author.username }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No stories published yet. Be the first to <a href="{{ url_for('register') }}">write one</a>!</p>
+    {% endif %}
 {% endblock %}

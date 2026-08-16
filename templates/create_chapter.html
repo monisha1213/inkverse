@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}New Chapter - {{ story.title }}{% endblock %}
+
+{% block content %}
+    <h1>Add a Chapter to "{{ story.title }}"</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('create_chapter', story_id=story.id) }}">
+        <div>
+            <label for="title">Chapter Title</label><br>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <br>
+        <div>
+            <label for="content">Chapter Content</label><br>
+            <textarea id="content" name="content" rows="15" required></textarea>
+        </div>
+        <br>
+        <button type="submit">Publish Chapter</button>
+    </form>
+
+    <p><a href="{{ url_for('view_story', story_id=story.id) }}">&larr; Back to story</a></p>
+{% endblock %}

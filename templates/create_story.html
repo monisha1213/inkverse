@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}New Story - InkVerse{% endblock %}
+
+{% block content %}
+    <h1>Start a New Story</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('create_story') }}" enctype="multipart/form-data">
+        <div>
+            <label for="title">Title</label><br>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <br>
+        <div>
+            <label for="description">Description</label><br>
+            <textarea id="description" name="description" rows="4"></textarea>
+        </div>
+        <br>
+        <div>
+            <label for="cover_image">Cover Image</label><br>
+            <input type="file" id="cover_image" name="cover_image" accept="image/*">
+        </div>
+        <br>
+        <div>
+            <label for="genre">Genre</label><br>
+            <select id="genre" name="genre">
+                <option value="Fantasy">Fantasy</option>
+                <option value="Romance">Romance</option>
+                <option value="Mystery">Mystery</option>
+                <option value="Sci-Fi">Sci-Fi</option>
+                <option value="Horror">Horror</option>
+                <option value="Adventure">Adventure</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <br>
+        <div>
+            <label for="status">Status</label><br>
+            <select id="status" name="status">
+                <option value="draft">Draft (only you can see it)</option>
+                <option value="published">Published (everyone can see it)</option>
+            </select>
+        </div>
+        <br>
+        <button type="submit">Create Story</button>
+    </form>
+{% endblock %}

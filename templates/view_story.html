@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ story.title }} - InkVerse{% endblock %}
+
+{% block content %}
+    <div class="story-header">
+        {% if story.cover_image %}
+            <img src="{{ url_for('static', filename='uploads/' + story.cover_image) }}" alt="{{ story.title }}" class="story-cover-large">
+        {% endif %}
+
+        <div class="story-info">
+            <h1>{{ story.title }}</h1>
+            <p class="genre-tag">{{ story.genre }}</p>
+            <p>by <strong>{{ story.author.username }}</strong></p>
+            <p>{{ story.description }}</p>
+
+            {% if current_user and current_user.id == story.author_id %}
+                <a href="{{ url_for('edit_story', story_id=story.id) }}">Edit Story</a>
+                |
+                <a href="{{ url_for('delete_story', story_id=story.id) }}">Delete Story</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Chapters</h2>
+
+    {% if current_user and current_user.id == story.author_id %}
+        <a href="{{ url_for('create_chapter', story_id=story.id) }}">+ Add Chapter</a>
+    {% endif %}
+
+    {% if story.chapters %}
+        <ul>
+            {% for chapter in story.chapters %}
+                <li>
+                    <a href="{{ url_for('read_chapter', story_id=story.id, chapter_number=chapter.chapter_number) }}">Chapter {{ chapter.chapter_number }}: {{ chapter.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No chapters yet.</p>
+    {% endif %}
+{% endblock %}

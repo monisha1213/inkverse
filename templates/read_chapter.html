@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chapter.title }} - {{ story.title }}{% endblock %}
+
+{% block content %}
+    <p><a href="{{ url_for('view_story', story_id=story.id) }}">&larr; Back to {{ story.title }}</a></p>
+
+    <h1>Chapter {{ chapter.chapter_number }}: {{ chapter.title }}</h1>
+
+    <div class="chapter-content">
+        {{ chapter.content }}
+    </div>
+
+    <hr>
+
+    <div class="chapter-nav">
+        {% if prev_chapter %}
+            <a href="{{ url_for('read_chapter', story_id=story.id, chapter_number=prev_chapter.chapter_number) }}">&larr; Previous Chapter</a>
+        {% endif %}
+
+        {% if next_chapter %}
+            <a href="{{ url_for('read_chapter', story_id=story.id, chapter_number=next_chapter.chapter_number) }}" style="float: right;">Next Chapter &rarr;</a>
+        {% endif %}
+    </div>
+{% endblock %}

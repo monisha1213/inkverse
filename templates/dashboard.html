@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - InkVerse{% endblock %}
+
+{% block content %}
+    <h1>Your Stories</h1>
+
+    <a href="{{ url_for('create_story') }}">+ New Story</a>
+
+    {% if stories %}
+        <ul>
+            {% for story in stories %}
+                <li>
+                    {% if story.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + story.cover_image) }}" alt="{{ story.title }}" width="150">
+                    {% endif %}
+                    <br>
+                    <strong>{{ story.title }}</strong>
+                    ({{ story.genre }}, {{ story.status }})
+                    <br>
+                    <a href="{{ url_for('view_story', story_id=story.id) }}">View</a>
+                    |
+                    <a href="{{ url_for('edit_story', story_id=story.id) }}">Edit</a>
+                    |
+                    <a href="{{ url_for('delete_story', story_id=story.id) }}">Delete</a>
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You haven't written any stories yet.</p>
+    {% endif %}
+{% endblock %}
