@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookmarks - InkVerse{% endblock %}
+
+{% block content %}
+    <h1>Your Bookmarked Stories</h1>
+
+    {% if stories %}
+        <div class="story-grid">
+            {% for story in stories %}
+                <a href="{{ url_for('view_story', story_id=story.id) }}" class="story-card">
+                    {% if story.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + story.cover_image) }}" alt="{{ story.title }}">
+                    {% else %}
+                        <div class="no-cover">No Cover</div>
+                    {% endif %}
+                    <h3>{{ story.title }}</h3>
+                    <p class="genre-tag">{{ story.genre }}</p>
+                    <p class="author-name">by {{ story.author.username }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You haven't bookmarked any stories yet.</p>
+    {% endif %}
+{% endblock %}

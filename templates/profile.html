@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }} - InkVerse{% endblock %}
+
+{% block content %}
+    <div class="profile-header">
+        <h1>{{ profile_user.username }}</h1>
+
+        {% if profile_user.bio %}
+            <p>{{ profile_user.bio }}</p>
+        {% endif %}
+
+        <p>
+            <strong>{{ profile_user.followers|length }}</strong> followers
+            &nbsp;&middot;&nbsp;
+            <strong>{{ profile_user.following|length }}</strong> following
+            &nbsp;&middot;&nbsp;
+            <strong>{{ stories|length }}</strong> published stories
+        </p>
+
+        {% if current_user and current_user.id != profile_user.id %}
+            <form method="POST" action="{{ url_for('toggle_follow', username=profile_user.username) }}">
+                <button type="submit">
+                    {% if is_following %}
+                        Following
+                    {% else %}
+                        + Follow
+                    {% endif %}
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <h2>Published Stories</h2>
+
+    {% if stories %}
+        <div class="story-grid">
+            {% for story in stories %}
+                <a href="{{ url_for('view_story', story_id=story.id) }}" class="story-card">
+                    {% if story.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + story.cover_image) }}" alt="{{ story.title }}">
+                    {% else %}
+                        <div class="no-cover">No Cover</div>
+                    {% endif %}
+                    <h3>{{ story.title }}</h3>
+                    <p class="genre-tag">{{ story.genre }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No published stories yet.</p>
+    {% endif %}
+{% endblock %}

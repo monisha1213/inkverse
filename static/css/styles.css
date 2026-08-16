@@ -118,3 +118,32 @@ main {
     display: table;
     clear: both;
 }
+.comment-list {
+    list-style: none;
+    padding: 0;
+}
+
+.comment-list li {
+    background-color: white;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.comment-date {
+    color: #888;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+textarea {
+    width: 100%;
+    max-width: 500px;
+    font-family: inherit;
+    padding: 8px;
+}
+.profile-header {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+}

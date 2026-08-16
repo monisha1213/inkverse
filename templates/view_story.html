@@ -11,10 +11,35 @@
         <div class="story-info">
             <h1>{{ story.title }}</h1>
             <p class="genre-tag">{{ story.genre }}</p>
-            <p>by <strong>{{ story.author.username }}</strong></p>
+           <p>by <strong><a href="{{ url_for('profile', username=story.author.username) }}">{{ story.author.username }}</a></strong></p>
             <p>{{ story.description }}</p>
 
+            {% if current_user %}
+                <form method="POST" action="{{ url_for('toggle_like', story_id=story.id) }}" style="display: inline;">
+                    <button type="submit">
+                        {% if user_has_liked %}
+                            ❤️ Liked ({{ like_count }})
+                        {% else %}
+                            🤍 Like ({{ like_count }})
+                        {% endif %}
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ url_for('toggle_bookmark', story_id=story.id) }}" style="display: inline;">
+                    <button type="submit">
+                        {% if user_has_bookmarked %}
+                            🔖 Bookmarked
+                        {% else %}
+                            📑 Bookmark
+                        {% endif %}
+                    </button>
+                </form>
+            {% else %}
+                <p>🤍 {{ like_count }} likes — <a href="{{ url_for('login') }}">Log in</a> to like or bookmark this story</p>
+            {% endif %}
+
             {% if current_user and current_user.id == story.author_id %}
+                <br><br>
                 <a href="{{ url_for('edit_story', story_id=story.id) }}">Edit Story</a>
                 |
                 <a href="{{ url_for('delete_story', story_id=story.id) }}">Delete Story</a>

@@ -99,6 +99,14 @@ def dashboard():
     return render_template('dashboard.html', stories=stories)
 
 
+@app.route('/bookmarks')
+@login_required
+def bookmarks():
+    user_bookmarks = Bookmark.query.filter_by(user_id=session['user_id']).all()
+    bookmarked_stories = [b.story for b in user_bookmarks]
+    return render_template('bookmarks.html', stories=bookmarked_stories)
+
+
 @app.route('/stories/new', methods=['GET', 'POST'])
 @login_required
 def create_story():
@@ -138,7 +146,58 @@ def create_story():
 @app.route('/stories/<int:story_id>')
 def view_story(story_id):
     story = Story.query.get_or_404(story_id)
-    return render_template('view_story.html', story=story)
+
+    user_has_liked = False
+    user_has_bookmarked = False
+    if 'user_id' in session:
+        user_has_liked = Like.query.filter_by(user_id=session['user_id'], story_id=story.id).first() is not None
+        user_has_bookmarked = Bookmark.query.filter_by(user_id=session['user_id'], story_id=story.id).first() is not None
+
+    like_count = Like.query.filter_by(story_id=story.id).count()
+
+    return render_template(
+        'view_story.html',
+        story=story,
+        user_has_liked=user_has_liked,
+        like_count=like_count,
+        user_has_bookmarked=user_has_bookmarked
+    )
+
+
+@app.route('/stories/<int:story_id>/like', methods=['POST'])
+@login_required
+def toggle_like(story_id):
+    story = Story.query.get_or_404(story_id)
+
+    existing_like = Like.query.filter_by(user_id=session['user_id'], story_id=story.id).first()
+
+    if existing_like:
+        db.session.delete(existing_like)
+    else:
+        new_like = Like(user_id=session['user_id'], story_id=story.id)
+        db.session.add(new_like)
+
+    db.session.commit()
+
+    return redirect(url_for('view_story', story_id=story.id))
+
+
+@app.route('/stories/<int:story_id>/bookmark', methods=['POST'])
+@login_required
+def toggle_bookmark(story_id):
+    story = Story.query.get_or_404(story_id)
+
+    existing_bookmark = Bookmark.query.filter_by(user_id=session['user_id'], story_id=story.id).first()
+
+    if existing_bookmark:
+        db.session.delete(existing_bookmark)
+    else:
+        new_bookmark = Bookmark(user_id=session['user_id'], story_id=story.id)
+        db.session.add(new_bookmark)
+
+    db.session.commit()
+
+    return redirect(url_for('view_story', story_id=story.id))
 
 
 @app.route('/stories/<int:story_id>/edit', methods=['GET', 'POST'])
@@ -235,13 +294,34 @@ def read_chapter(story_id, chapter_number):
     prev_chapter = all_chapters[current_index - 1] if current_index > 0 else None
     next_chapter = all_chapters[current_index + 1] if current_index < len(all_chapters) - 1 else None
 
+    comments = Comment.query.filter_by(chapter_id=chapter.id).order_by(Comment.created_at.desc()).all()
+
     return render_template(
         'read_chapter.html',
         story=story,
         chapter=chapter,
         prev_chapter=prev_chapter,
-        next_chapter=next_chapter
+        next_chapter=next_chapter,
+        comments=comments
     )
+
+
+@app.route('/chapters/<int:chapter_id>/comments', methods=['POST'])
+@login_required
+def add_comment(chapter_id):
+    chapter = Chapter.query.get_or_404(chapter_id)
+    content = request.form.get('content')
+
+    if content and content.strip():
+        new_comment = Comment(
+            user_id=session['user_id'],
+            chapter_id=chapter.id,
+            content=content.strip()
+        )
+        db.session.add(new_comment)
+        db.session.commit()
+
+    return redirect(url_for('read_chapter', story_id=chapter.story_id, chapter_number=chapter.chapter_number))
 
 
 if __name__ == '__main__':

@@ -14,6 +14,7 @@
             <span>Hello, {{ current_user.username }}</span>
             <a href="{{ url_for('create_story') }}">New Story</a>
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('bookmarks') }}">Bookmarks</a>
             <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
             <a href="{{ url_for('register') }}">Register</a>

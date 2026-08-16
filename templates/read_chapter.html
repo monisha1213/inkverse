@@ -22,4 +22,31 @@
             <a href="{{ url_for('read_chapter', story_id=story.id, chapter_number=next_chapter.chapter_number) }}" style="float: right;">Next Chapter &rarr;</a>
         {% endif %}
     </div>
+
+    <hr>
+
+    <h2>Comments ({{ comments|length }})</h2>
+
+    {% if current_user %}
+        <form method="POST" action="{{ url_for('add_comment', chapter_id=chapter.id) }}">
+            <textarea name="content" rows="3" placeholder="Share your thoughts..." required></textarea><br>
+            <button type="submit">Post Comment</button>
+        </form>
+    {% else %}
+        <p><a href="{{ url_for('login') }}">Log in</a> to leave a comment.</p>
+    {% endif %}
+
+    {% if comments %}
+        <ul class="comment-list">
+            {% for comment in comments %}
+                <li>
+                    <strong>{{ comment.user.username }}</strong>
+                    <span class="comment-date">{{ comment.created_at.strftime('%b %d, %Y') }}</span>
+                    <p>{{ comment.content }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No comments yet. Be the first to share your thoughts!</p>
+    {% endif %}
 {% endblock %}
