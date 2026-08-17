@@ -46,6 +46,15 @@
             </select>
         </div>
         <br>
+<div>
+    <label for="language">Language</label><br>
+    <select id="language" name="language">
+        {% for l in ['English', 'Tamil', 'Hindi', 'Telugu', 'Kannada', 'Malayalam', 'Other'] %}
+            <option value="{{ l }}" {% if story.language == l %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+    </select>
+</div>
+        <br>
         <button type="submit">Save Changes</button>
     </form>
 

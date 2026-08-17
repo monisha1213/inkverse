@@ -45,6 +45,7 @@ def login_required(f):
 def home():
     search_query = request.args.get('q', '').strip()
     genre_filter = request.args.get('genre', '').strip()
+    language_filter = request.args.get('language', '').strip()
 
     query = Story.query.filter_by(status='published')
 
@@ -54,16 +55,22 @@ def home():
     if genre_filter:
         query = query.filter_by(genre=genre_filter)
 
+    if language_filter:
+        query = query.filter_by(language=language_filter)
+
     stories = query.order_by(Story.created_at.desc()).all()
 
     genres = ['Fantasy', 'Romance', 'Mystery', 'Sci-Fi', 'Horror', 'Adventure', 'Other']
+    languages = ['English', 'Tamil', 'Hindi', 'Telugu', 'Kannada', 'Malayalam', 'Other']
 
     return render_template(
         'home.html',
         stories=stories,
         genres=genres,
+        languages=languages,
         search_query=search_query,
-        genre_filter=genre_filter
+        genre_filter=genre_filter,
+        language_filter=language_filter
     )
 
 
@@ -138,6 +145,7 @@ def create_story():
         title = request.form.get('title')
         description = request.form.get('description')
         genre = request.form.get('genre')
+        language = request.form.get('language')
         status = request.form.get('status')
 
         if not title:
@@ -155,6 +163,7 @@ def create_story():
             title=title,
             description=description,
             genre=genre,
+            language=language,
             status=status,
             cover_image=cover_filename,
             author_id=session['user_id']
@@ -236,6 +245,7 @@ def edit_story(story_id):
         title = request.form.get('title')
         description = request.form.get('description')
         genre = request.form.get('genre')
+        language = request.form.get('language')
         status = request.form.get('status')
 
         if not title:
@@ -251,6 +261,7 @@ def edit_story(story_id):
         story.title = title
         story.description = description
         story.genre = genre
+        story.language = language
         story.status = status
 
         db.session.commit()
@@ -328,6 +339,54 @@ def read_chapter(story_id, chapter_number):
         next_chapter=next_chapter,
         comments=comments
     )
+
+
+@app.route('/stories/<int:story_id>/chapters/<int:chapter_number>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_chapter(story_id, chapter_number):
+    story = Story.query.get_or_404(story_id)
+    chapter = Chapter.query.filter_by(story_id=story_id, chapter_number=chapter_number).first_or_404()
+
+    if story.author_id != session['user_id']:
+        return "You are not allowed to edit this chapter.", 403
+
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+
+        if not title or not content:
+            return render_template('edit_chapter.html', story=story, chapter=chapter, error='Title and content are required.')
+
+        chapter.title = title
+        chapter.content = content
+        db.session.commit()
+
+        return redirect(url_for('read_chapter', story_id=story.id, chapter_number=chapter.chapter_number))
+
+    return render_template('edit_chapter.html', story=story, chapter=chapter)
+
+
+@app.route('/stories/<int:story_id>/chapters/<int:chapter_number>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_chapter(story_id, chapter_number):
+    story = Story.query.get_or_404(story_id)
+    chapter = Chapter.query.filter_by(story_id=story_id, chapter_number=chapter_number).first_or_404()
+
+    if story.author_id != session['user_id']:
+        return "You are not allowed to delete this chapter.", 403
+
+    if request.method == 'POST':
+        db.session.delete(chapter)
+        db.session.commit()
+
+        remaining_chapters = Chapter.query.filter_by(story_id=story.id).order_by(Chapter.chapter_number).all()
+        for index, ch in enumerate(remaining_chapters, start=1):
+            ch.chapter_number = index
+        db.session.commit()
+
+        return redirect(url_for('view_story', story_id=story.id))
+
+    return render_template('delete_chapter.html', story=story, chapter=chapter)
 
 
 @app.route('/chapters/<int:chapter_id>/comments', methods=['POST'])
