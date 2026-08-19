@@ -4,6 +4,24 @@
 
 {% block content %}
     <h1>Your Stories</h1>
+    <div class="stats-bar">
+    <div class="stat">
+        <span class="stat-number">{{ total_stories }}</span>
+        <span class="stat-label">Stories</span>
+    </div>
+    <div class="stat">
+        <span class="stat-number">{{ total_likes }}</span>
+        <span class="stat-label">Total Likes</span>
+    </div>
+    <div class="stat">
+        <span class="stat-number">{{ total_comments }}</span>
+        <span class="stat-label">Total Comments</span>
+    </div>
+    <div class="stat">
+        <span class="stat-number">{{ total_followers }}</span>
+        <span class="stat-label">Followers</span>
+    </div>
+</div>
 
     <a href="{{ url_for('create_story') }}">+ New Story</a>
 

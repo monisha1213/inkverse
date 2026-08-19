@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}InkVerse{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
@@ -10,22 +11,50 @@
     <nav>
         <a href="{{ url_for('home') }}">InkVerse</a>
 
-       {% if current_user %}
-          <a href="{{ url_for('profile', username=current_user.username) }}">Hello, {{ current_user.username }}</a>
-          <a href="{{ url_for('create_story') }}">New Story</a>
-          <a href="{{ url_for('dashboard') }}">Dashboard</a>
-          <a href="{{ url_for('bookmarks') }}">Bookmarks</a>
-          <a href="{{ url_for('logout') }}">Logout</a>
-       {% else %}
+        {% if current_user %}
+            <a href="{{ url_for('profile', username=current_user.username) }}">Hello, {{ current_user.username }}</a>
+            <a href="{{ url_for('create_story') }}">New Story</a>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('bookmarks') }}">Bookmarks</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
             <a href="{{ url_for('register') }}">Register</a>
             <a href="{{ url_for('login') }}">Login</a>
         {% endif %}
+
+        <button id="theme-toggle" type="button">🌙 Dark</button>
     </nav>
+
+    <div id="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast toast-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
 
     <main>
         {% block content %}
         {% endblock %}
     </main>
 
+    <footer>
+    <p>
+        <a href="{{ url_for('about') }}">About</a>
+        &middot;
+        <a href="{{ url_for('contact') }}">Contact</a>
+        &middot;
+        <a href="https://github.com/monisha1213" target="_blank" rel="noopener">GitHub</a>
+        &middot;
+        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+    </p>
+    <p class="footer-note">&copy; 2026 InkVerse. Built as a full-stack learning project.</p>
+</footer>
+
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
 </body>
 </html>

@@ -4,35 +4,52 @@
 
 {% block content %}
     <div class="profile-header">
-        <h1>{{ profile_user.username }}</h1>
+        <div class="profile-top">
+            {% if profile_user.avatar %}
+                <img src="{{ url_for('static', filename='uploads/' + profile_user.avatar) }}" alt="{{ profile_user.username }}" class="avatar-large">
+            {% else %}
+                <div class="avatar-placeholder">{{ profile_user.username[0]|upper }}</div>
+            {% endif %}
 
-        {% if profile_user.bio %}
-            <p>{{ profile_user.bio }}</p>
-        {% elif current_user and current_user.id == profile_user.id %}
-            <p><em>You haven't added a bio yet.</em></p>
-        {% endif %}
+            <div>
+                <h1>{{ profile_user.username }}</h1>
 
-        <p>
-            <strong>{{ profile_user.followers|length }}</strong> followers
-            &nbsp;&middot;&nbsp;
-            <strong>{{ profile_user.following|length }}</strong> following
-            &nbsp;&middot;&nbsp;
-            <strong>{{ stories|length }}</strong> published stories
-        </p>
+                {% if profile_user.bio %}
+                    <p>{{ profile_user.bio }}</p>
+                {% elif current_user and current_user.id == profile_user.id %}
+                    <p><em><a href="{{ url_for('edit_profile') }}">+ Add details about yourself</a></em></p>
+                {% endif %}
 
-        {% if current_user and current_user.id == profile_user.id %}
-            <a href="{{ url_for('edit_profile') }}">Edit Profile</a>
-        {% elif current_user %}
-            <form method="POST" action="{{ url_for('toggle_follow', username=profile_user.username) }}">
-                <button type="submit">
-                    {% if is_following %}
-                        Following
-                    {% else %}
-                        + Follow
-                    {% endif %}
-                </button>
-            </form>
-        {% endif %}
+                {% if current_user and current_user.id == profile_user.id %}
+                    <a href="{{ url_for('edit_profile') }}">Edit Profile</a>
+                {% elif current_user %}
+                    <form method="POST" action="{{ url_for('toggle_follow', username=profile_user.username) }}">
+                        <button type="submit">
+                            {% if is_following %}
+                                Following
+                            {% else %}
+                                + Follow
+                            {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="profile-stats">
+            <div class="stat-block">
+                <span class="stat-number">{{ profile_user.followers|length }}</span>
+                <span class="stat-label">Followers</span>
+            </div>
+            <div class="stat-block">
+                <span class="stat-number">{{ profile_user.following|length }}</span>
+                <span class="stat-label">Following</span>
+            </div>
+            <div class="stat-block">
+                <span class="stat-number">{{ stories|length }}</span>
+                <span class="stat-label">Stories</span>
+            </div>
+        </div>
     </div>
 
     <hr>

@@ -47,11 +47,18 @@
     {% if comments %}
         <ul class="comment-list">
             {% for comment in comments %}
-                <li>
-                    <strong>{{ comment.user.username }}</strong>
-                    <span class="comment-date">{{ comment.created_at.strftime('%b %d, %Y') }}</span>
-                    <p>{{ comment.content }}</p>
-                </li>
+              <li class="comment-item">
+    {% if comment.user.avatar %}
+        <img src="{{ url_for('static', filename='uploads/' + comment.user.avatar) }}" alt="{{ comment.user.username }}" class="avatar-small">
+    {% else %}
+        <div class="avatar-placeholder-small">{{ comment.user.username[0]|upper }}</div>
+    {% endif %}
+    <div>
+        <strong>{{ comment.user.username }}</strong>
+        <span class="comment-date">{{ comment.created_at.strftime('%b %d, %Y') }}</span>
+        <p>{{ comment.content }}</p>
+    </div>
+</li>  
             {% endfor %}
         </ul>
     {% else %}

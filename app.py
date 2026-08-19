@@ -1,7 +1,7 @@
 import os
 import uuid
 from datetime import timedelta
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 from functools import wraps
 from werkzeug.utils import secure_filename
 from models import db
@@ -77,6 +77,27 @@ def home():
     )
 
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        message = request.form.get('message')
+
+        if not name or not email or not message:
+            return render_template('contact.html', error='All fields are required.')
+
+        flash('Thanks for reaching out! (This is a demo form — messages aren\'t actually sent yet.)', 'success')
+        return redirect(url_for('contact'))
+
+    return render_template('contact.html')
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -95,6 +116,7 @@ def register():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
+        flash('Account created! Please log in.', 'success')
 
         return redirect(url_for('login'))
 
@@ -115,6 +137,8 @@ def login():
 
         session['user_id'] = user.id
         session.permanent = bool(remember_me)
+        flash(f'Welcome back, {user.username}!', 'success')
+
         return redirect(url_for('home'))
 
     return render_template('login.html')
@@ -123,6 +147,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
+    flash('You have been logged out.', 'success')
     return redirect(url_for('home'))
 
 
@@ -130,7 +155,20 @@ def logout():
 @login_required
 def dashboard():
     stories = Story.query.filter_by(author_id=session['user_id']).all()
-    return render_template('dashboard.html', stories=stories)
+
+    total_stories = len(stories)
+    total_likes = sum(len(s.likes) for s in stories)
+    total_comments = sum(len(ch.comments) for s in stories for ch in s.chapters)
+    total_followers = len(User.query.get(session['user_id']).followers)
+
+    return render_template(
+        'dashboard.html',
+        stories=stories,
+        total_stories=total_stories,
+        total_likes=total_likes,
+        total_comments=total_comments,
+        total_followers=total_followers
+    )
 
 
 @app.route('/bookmarks')
@@ -173,6 +211,7 @@ def create_story():
         )
         db.session.add(new_story)
         db.session.commit()
+        flash('Story created successfully!', 'success')
 
         return redirect(url_for('dashboard'))
 
@@ -268,6 +307,7 @@ def edit_story(story_id):
         story.status = status
 
         db.session.commit()
+        flash('Story updated successfully!', 'success')
 
         return redirect(url_for('view_story', story_id=story.id))
 
@@ -285,6 +325,7 @@ def delete_story(story_id):
     if request.method == 'POST':
         db.session.delete(story)
         db.session.commit()
+        flash('Story deleted.', 'success')
         return redirect(url_for('dashboard'))
 
     return render_template('delete_story.html', story=story)
@@ -316,6 +357,7 @@ def create_chapter(story_id):
         )
         db.session.add(new_chapter)
         db.session.commit()
+        flash('Chapter published!', 'success')
 
         return redirect(url_for('view_story', story_id=story.id))
 
@@ -363,6 +405,7 @@ def edit_chapter(story_id, chapter_number):
         chapter.title = title
         chapter.content = content
         db.session.commit()
+        flash('Chapter updated!', 'success')
 
         return redirect(url_for('read_chapter', story_id=story.id, chapter_number=chapter.chapter_number))
 
@@ -386,6 +429,7 @@ def delete_chapter(story_id, chapter_number):
         for index, ch in enumerate(remaining_chapters, start=1):
             ch.chapter_number = index
         db.session.commit()
+        flash('Chapter deleted.', 'success')
 
         return redirect(url_for('view_story', story_id=story.id))
 
@@ -406,6 +450,7 @@ def add_comment(chapter_id):
         )
         db.session.add(new_comment)
         db.session.commit()
+        flash('Comment posted!', 'success')
 
     return redirect(url_for('read_chapter', story_id=chapter.story_id, chapter_number=chapter.chapter_number))
 
@@ -436,7 +481,16 @@ def edit_profile():
     if request.method == 'POST':
         bio = request.form.get('bio', '').strip()
         user.bio = bio
+
+        file = request.files.get('avatar')
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            unique_filename = f"{uuid.uuid4().hex}_{filename}"
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+            user.avatar = unique_filename
+
         db.session.commit()
+        flash('Profile updated!', 'success')
         return redirect(url_for('profile', username=user.username))
 
     return render_template('edit_profile.html')
@@ -461,6 +515,11 @@ def toggle_follow(username):
     db.session.commit()
 
     return redirect(url_for('profile', username=username))
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 
 if __name__ == '__main__':

@@ -9,7 +9,15 @@
         <p style="color: red;">{{ error }}</p>
     {% endif %}
 
-    <form method="POST" action="{{ url_for('edit_profile') }}">
+    <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
+        <div>
+            <label for="avatar">Profile Picture</label><br>
+            {% if current_user.avatar %}
+                <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" alt="Current avatar" class="avatar-preview"><br>
+            {% endif %}
+            <input type="file" id="avatar" name="avatar" accept="image/*">
+        </div>
+        <br>
         <div>
             <label for="bio">Bio</label><br>
             <textarea id="bio" name="bio" rows="4" placeholder="Tell readers a little about yourself...">{{ current_user.bio or '' }}</textarea>
